@@ -1,0 +1,93 @@
+{% extends 'base.html' %} 
+{% block content %}
+<div class="page-header no-margin-bottom">
+    <div class="container-fluid">
+      <h2 class="h5 no-margin-bottom">Countries</h2>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <ul class="breadcrumb">
+    </ul>
+  </div>
+  <section class="no-padding-top no-padding-bottom">
+    <div class="container-fluid">
+      <div class="row"></div>
+        <div class="col-lg-12">
+          <div class="block">
+            <div class="title"><strong>COVID-19 Information by Country</strong></div>
+            <div class="table-responsive"> 
+              <table class="table table-striped table-sm">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Country</th>
+                    <th>Cases</th>
+                    <th>Today Cases</th>
+                    <th>Deaths</th>
+                    <th>Today Deaths</th>
+                    <th>Recovered</th>
+                    <th>Active</th>
+                    <th>Critical</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    {% for country in dataCountry %}
+                        <tr>
+                            <th scope="row">{{loop.index}}</th>
+                            <td id="{{'ccountry'+loop.index|string}}">{{ country['country'] }}</td>
+                            <td id="{{'ccases'+loop.index|string}}">{{ country['cases'] }}</td>
+                            <td id="{{'ctodaycases'+loop.index|string}}">{{ country['todayCases'] }}</td>
+                            <td id="{{'cdeaths'+loop.index|string}}">{{ country['deaths'] }}</td>
+                            <td id="{{'ctodaydeaths'+loop.index|string}}">{{ country['todayDeaths'] }}</td>
+                            <td id="{{'crecovered'+loop.index|string}}">{{ country['recovered'] }}</td>
+                            <td id="{{'cactive'+loop.index|string}}">{{ country['active'] }}</td>
+                            <td id="{{'ccritical'+loop.index|string}}">{{ country['critical'] }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Socket-->
+<script src="{{ url_for('static', filename='socket/socket.io-1.3.5.min.js') }}"></script>
+<script>
+    namespace = '/carpi';
+    var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+    socket.on('respuesta_datos', function(msg) {
+        var dataWorld = msg.dataWorld   
+        var dataValueTerritories = msg.dataValueTerritories
+        var dataCountry = msg.dataCountry
+        
+        /******************************************************/
+        function cambiar_valor() {
+            
+            // document.getElementById('dataValueCases').innerHTML = dataWorld['cases'];
+            // document.getElementById('dataValueDeaths').innerHTML = dataWorld['deaths'];
+            // document.getElementById('dataValueRecovered').innerHTML = dataWorld['recovered'];
+            // document.getElementById('dataValueTerritories').innerHTML = dataValueTerritories;
+
+            for (var i=0; i < dataValueTerritories; i++){
+                console.log(dataCountry[i]['country'], dataCountry[i]['cases'], dataCountry[i]['todayCases'], 'ctodaycases'+(i+1).toString())
+
+                document.getElementById('ccountry'+(i+1).toString()).innerHTML = dataCountry[i]['country'];
+                document.getElementById('ccases'+(i+1).toString()).innerHTML = dataCountry[i]['cases'];
+                document.getElementById('ctodaycases'+(i+1).toString()).innerHTML = dataCountry[i]['todayCases'];
+                document.getElementById('cdeaths'+(i+1).toString()).innerHTML = dataCountry[i]['deaths'];
+                document.getElementById('ctodaydeaths'+(i+1).toString()).innerHTML = dataCountry[i]['todayDeaths'];
+                document.getElementById('crecovered'+(i+1).toString()).innerHTML = dataCountry[i]['recovered'];
+                document.getElementById('cactive'+(i+1).toString()).innerHTML = dataCountry[i]['active'];
+                document.getElementById('ccritical'+(i+1).toString()).innerHTML = dataCountry[i]['critical'];
+            } 
+        }
+
+        cambiar_valor();
+        console.log("Valores actualizados")
+
+    });
+</script>
+{% endblock %}
