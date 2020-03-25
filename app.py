@@ -1,10 +1,10 @@
 #!/usr/bin/env python 
 from flask import Flask, render_template, request, make_response, session, redirect, url_for, g
 from flask_socketio import SocketIO, emit, send
-import json # para poder utilizar y manipular archivos json
+import json # to be able to use and manipulate json files
 import time
 import requests
-
+############################## Developed By ZUHAIR ABBAS ############################
 SERVER_HOST = "localhost"
 SERVER_PORT = 5000
 
@@ -16,37 +16,45 @@ socketio = SocketIO(app, async_mode=async_mode)
 thread = None
 
 def requestApi():
-    try:
-        dataWorld = requests.get('https://corona.lmao.ninja/all')
-        dataWorld = dataWorld.json()
-    except Exception as e:
-        dataWorld = []
-    try:
-        dataCountry = requests.get('https://corona.lmao.ninja/countries')
-        dataCountry = dataCountry.json()
-    except Exception as e:
-        dataCountry = []
+	try:
+		dataWorld = requests.get('https://corona.lmao.ninja/all')
+		dataWorld = dataWorld.json()
+	except Exception as e:
+		dataWorld = []
+	try:
+		dataCountry = requests.get('https://corona.lmao.ninja/countries')
+		dataCountry = dataCountry.json()
+	except Exception as e:
+		dataCountry = []
+	try:
+		dataIndia = requests.get('https://corona.lmao.ninja/countries/india')
+		dataIndia = dataIndia.json()
+	except Exception as e:
+		dataIndia = []
     
-    return dataWorld, dataCountry
+	return dataWorld, dataCountry, dataIndia
 
 global dataWorld
 global dataCountry
-dataWorld, dataCountry = requestApi()
+global dataIndia
+dataWorld, dataCountry, dataIndia = requestApi()
 ###################################################
 # THREAD
 ###################################################
 def background_thread():
     global dataWorld
     global dataCountry
+    global dataIndia
     while True:
 
-        (dataWorld, dataCountry) = requestApi()
+        (dataWorld, dataCountry, dataIndia) = requestApi()
 
         socketio.emit('respuesta_datos',
                       {'data':'Values', 
                       'dataWorld': dataWorld,
                       'dataValueTerritories': len(dataCountry),
-                      'dataCountry': dataCountry
+                      'dataCountry': dataCountry,
+					  'dataIndia': dataIndia
                       },
                       namespace='/carpi')
         socketio.sleep(7)
@@ -55,24 +63,50 @@ def background_thread():
 ###################################################
 @app.route('/', methods=["GET", "POST"])
 def index():
-    # para buscar uno específico
-    # print(list(filter(lambda x:x["country"]=="Chile",dataValues2.json())))
+    # for specific
+    # print(list(filter(lambda x:x["country"]=="India",dataValues2.json())))
 
     return render_template('index.html',    async_mode = socketio.async_mode, 
-                                            dataValuesCases = dataWorld['cases'], 
+                                            dataValuesCases = dataWorld['cases'],
+											dataIndiaCases = dataIndia['cases'],
                                             dataValuesDeaths = dataWorld['deaths'],
+											dataIndiaDeaths = dataIndia['deaths'],
                                             dataValuesRecovered = dataWorld['recovered'],
+											dataIndiaRecovered = dataIndia['recovered'],
+											dataIndiaActive = dataIndia['active'],
                                             dataValuesTerritories = len(dataCountry),
-                                            dataCountry = dataCountry) # retorna la pestaña de inicio
+											dataIndia = dataIndia,
+                                            dataCountry = dataCountry)
 ###################################################
-# INICIO
+# Start
 ###################################################
 @app.route('/country', methods=["GET", "POST"])
 def country():
-    # para buscar uno específico
-    # print(list(filter(lambda x:x["country"]=="Chile",dataValues2.json())))
+    # for specific
+    # print(list(filter(lambda x:x["country"]=="India",dataValues2.json())))
 
-    return render_template('country.html', async_mode=socketio.async_mode, dataCountry=dataCountry) # retorna la pestaña de inicio
+    return render_template('country.html', 	async_mode=socketio.async_mode,	
+											dataIndiaCases = dataIndia['cases'],
+											dataIndiaDeaths = dataIndia['deaths'],
+											dataIndiaRecovered = dataIndia['recovered'],
+											dataIndiaActive = dataIndia['active'],
+											dataIndia = dataIndia,
+											dataCountry=dataCountry)
+###################################################
+# Start
+###################################################
+@app.route('/india', methods=["GET", "POST"])
+def india():
+    # for specific
+    # print(list(filter(lambda x:x["country"]=="India",dataValues2.json())))
+
+    return render_template('india.html', 	async_mode=socketio.async_mode,	
+											dataIndiaCases = dataIndia['cases'],
+											dataIndiaDeaths = dataIndia['deaths'],
+											dataIndiaRecovered = dataIndia['recovered'],
+											dataIndiaActive = dataIndia['active'],
+											dataIndia = dataIndia,
+											dataCountry=dataCountry)
 ###################################################
 @socketio.on('client_connected', namespace='/carpi')
 def handle_client_connect_event(json):
