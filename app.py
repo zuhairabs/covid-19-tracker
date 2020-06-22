@@ -17,17 +17,17 @@ thread = None
 
 def requestApi():
 	try:
-		dataWorld = requests.get('https://corona.lmao.ninja/all')
+		dataWorld = requests.get('https://corona.lmao.ninja/v2/all')
 		dataWorld = dataWorld.json()
 	except Exception as e:
 		dataWorld = []
 	try:
-		dataCountry = requests.get('https://corona.lmao.ninja/countries')
+		dataCountry = requests.get('https://corona.lmao.ninja/v2/countries')
 		dataCountry = dataCountry.json()
 	except Exception as e:
 		dataCountry = []
 	try:
-		dataIndia = requests.get('https://corona.lmao.ninja/countries/india')
+		dataIndia = requests.get('https://corona.lmao.ninja/v2/countries/india')
 		dataIndia = dataIndia.json()
 	except Exception as e:
 		dataIndia = []
